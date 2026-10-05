@@ -1,0 +1,4 @@
+CUSTOMER_ID,NAME,EMAIL
+1001,Asha Patel,asha@example.com
+1002,David Wong,david@example.com
+1003,,missing-name@example.com
