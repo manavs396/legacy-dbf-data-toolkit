@@ -1,0 +1,7 @@
+{
+  "required_fields": ["CUSTOMER_ID", "NAME"],
+  "max_lengths": {
+    "NAME": 60,
+    "EMAIL": 120
+  }
+}
