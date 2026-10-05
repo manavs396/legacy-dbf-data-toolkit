@@ -3,6 +3,7 @@ from .config import load_rules
 from .exporter import export_csv, export_json
 from .logging_utils import configure_logging
 from .reader import inspect_schema, read_dbf
+from .sqlite_migrator import migrate_dbf_to_sqlite
 from .validation import validate_records
 
 LOG = logging.getLogger(__name__)
@@ -23,6 +24,12 @@ def build_parser():
     export_cmd.add_argument("dbf")
     export_cmd.add_argument("--format", choices=["csv", "json"], required=True)
     export_cmd.add_argument("--output", required=True)
+
+    migrate_cmd = sub.add_parser("migrate-sqlite")
+    migrate_cmd.add_argument("dbf")
+    migrate_cmd.add_argument("--database", required=True)
+    migrate_cmd.add_argument("--table")
+
     return parser
 
 def main():
@@ -40,6 +47,11 @@ def main():
         print(json.dumps([i.__dict__ for i in issues], indent=2))
         LOG.info("Validated %s records; found %s issues", len(records), len(issues))
         return 1 if issues else 0
+
+    if args.command == "migrate-sqlite":
+        migrated = migrate_dbf_to_sqlite(args.dbf, args.database, args.table)
+        LOG.info("Migrated %s records to %s", migrated, args.database)
+        return 0
 
     records = read_dbf(args.dbf)
     export_csv(records, args.output) if args.format == "csv" else export_json(records, args.output)
