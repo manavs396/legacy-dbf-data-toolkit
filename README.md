@@ -8,6 +8,7 @@ The goal is to demonstrate a practical modernization path for systems that still
 
 - Read DBF tables
 - Inspect schema and field metadata
+- Compare two DBF schemas for added, removed, or changed fields
 - Validate required fields and simple business rules
 - Export records to CSV or JSON
 - Migrate DBF records into SQLite for modernization experiments
@@ -34,6 +35,16 @@ Inspect a DBF schema:
 ```bash
 python -m legacy_dbf_toolkit.cli inspect path/to/customers.dbf
 ```
+
+Compare two DBF schemas before a migration:
+
+```bash
+python -m legacy_dbf_toolkit.cli schema-diff path/to/old.dbf path/to/new.dbf
+# For CI checks, return exit code 1 when differences are found:
+python -m legacy_dbf_toolkit.cli schema-diff path/to/old.dbf path/to/new.dbf --fail-on-change
+```
+
+The JSON report contains `added`, `removed`, and `changed` fields, including before/after metadata for changes in type, length, or decimal precision. Field names are compared case-insensitively; column order and case-only name differences are ignored. By default, reporting exits successfully even when changes exist. This checks field metadata only, not records, indexes, relationships, or FoxPro business logic.
 
 Validate records:
 

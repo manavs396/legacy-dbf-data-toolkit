@@ -3,6 +3,7 @@ from .config import load_rules
 from .exporter import export_csv, export_json
 from .logging_utils import configure_logging
 from .reader import inspect_schema, read_dbf
+from .schema_diff import compare_schemas
 from .sqlite_migrator import migrate_dbf_to_sqlite
 from .validation import validate_records
 
@@ -15,6 +16,11 @@ def build_parser():
 
     inspect_cmd = sub.add_parser("inspect")
     inspect_cmd.add_argument("dbf")
+
+    diff_cmd = sub.add_parser("schema-diff", help="Compare DBF field metadata")
+    diff_cmd.add_argument("before", help="Original DBF file")
+    diff_cmd.add_argument("after", help="Updated DBF file")
+    diff_cmd.add_argument("--fail-on-change", action="store_true", help="Exit 1 if schema differs")
 
     validate_cmd = sub.add_parser("validate")
     validate_cmd.add_argument("dbf")
@@ -39,6 +45,11 @@ def main():
     if args.command == "inspect":
         print(json.dumps([f.__dict__ for f in inspect_schema(args.dbf)], indent=2))
         return 0
+
+    if args.command == "schema-diff":
+        report = compare_schemas(inspect_schema(args.before), inspect_schema(args.after))
+        print(json.dumps(report, indent=2))
+        return 1 if args.fail_on_change and any(report.values()) else 0
 
     if args.command == "validate":
         rules = load_rules(args.config)
