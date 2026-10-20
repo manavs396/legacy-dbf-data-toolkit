@@ -13,12 +13,14 @@ def validate_records(records: list[dict[str, Any]], required_fields=None, max_le
     max_lengths = max_lengths or {}
     issues = []
     for row_number, record in enumerate(records, start=1):
+        # FoxPro field names are case-insensitive.
+        values_by_field = {name.upper(): value for name, value in record.items()}
         for field in required_fields:
-            value = record.get(field)
+            value = values_by_field.get(field.upper())
             if value is None or (isinstance(value, str) and not value.strip()):
                 issues.append(ValidationIssue(row_number, field, "Required value is missing"))
         for field, maximum in max_lengths.items():
-            value = record.get(field)
+            value = values_by_field.get(field.upper())
             if value is not None and len(str(value)) > maximum:
                 issues.append(ValidationIssue(row_number, field, f"Value exceeds maximum length of {maximum}"))
     return issues
