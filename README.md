@@ -52,6 +52,8 @@ Validate records:
 python -m legacy_dbf_toolkit.cli validate path/to/customers.dbf --config config/example_rules.json
 ```
 
+Validation field names are matched case-insensitively (as in FoxPro/DBF), so a `NAME` rule also matches a `Name` column. Issue reports retain the configured field spelling.
+
 Export to CSV:
 
 ```bash
