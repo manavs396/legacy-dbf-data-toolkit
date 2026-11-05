@@ -1,4 +1,6 @@
 import argparse, json, logging
+from pathlib import Path
+
 from .config import load_rules
 from .exporter import export_csv, export_json
 from .logging_utils import configure_logging
@@ -20,6 +22,7 @@ def build_parser():
     diff_cmd = sub.add_parser("schema-diff", help="Compare DBF field metadata")
     diff_cmd.add_argument("before", help="Original DBF file")
     diff_cmd.add_argument("after", help="Updated DBF file")
+    diff_cmd.add_argument("--output", help="Optional path to save the JSON report")
     diff_cmd.add_argument("--fail-on-change", action="store_true", help="Exit 1 if schema differs")
 
     validate_cmd = sub.add_parser("validate")
@@ -48,7 +51,18 @@ def main():
 
     if args.command == "schema-diff":
         report = compare_schemas(inspect_schema(args.before), inspect_schema(args.after))
-        print(json.dumps(report, indent=2))
+        rendered = json.dumps(report, indent=2)
+
+        if args.output:
+            try:
+                output_path = Path(args.output)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                output_path.write_text(rendered + "\n", encoding="utf-8")
+            except OSError as exc:
+                LOG.error("Could not write schema-diff report to %s: %s", args.output, exc)
+                return 2
+
+        print(rendered)
         return 1 if args.fail_on_change and any(report.values()) else 0
 
     if args.command == "validate":
