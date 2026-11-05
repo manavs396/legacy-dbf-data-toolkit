@@ -40,11 +40,18 @@ Compare two DBF schemas before a migration:
 
 ```bash
 python -m legacy_dbf_toolkit.cli schema-diff path/to/old.dbf path/to/new.dbf
+
+# Save the JSON report as a CI/migration artifact:
+python -m legacy_dbf_toolkit.cli schema-diff path/to/old.dbf path/to/new.dbf \
+  --output output/schema-diff.json
+
 # For CI checks, return exit code 1 when differences are found:
-python -m legacy_dbf_toolkit.cli schema-diff path/to/old.dbf path/to/new.dbf --fail-on-change
+python -m legacy_dbf_toolkit.cli schema-diff path/to/old.dbf path/to/new.dbf \
+  --output output/schema-diff.json \
+  --fail-on-change
 ```
 
-The JSON report contains `added`, `removed`, and `changed` fields, including before/after metadata for changes in type, length, or decimal precision. Field names are compared case-insensitively; column order and case-only name differences are ignored. By default, reporting exits successfully even when changes exist. This checks field metadata only, not records, indexes, relationships, or FoxPro business logic.
+The JSON report contains `added`, `removed`, and `changed` fields, including before/after metadata for changes in type, length, or decimal precision. Field names are compared case-insensitively; column order and case-only name differences are ignored. By default, the report is printed to stdout. When `--output` is supplied, the same JSON is also written to the requested file, making it easy to retain schema comparisons as CI artifacts or migration-review evidence. `--fail-on-change` continues to return exit code 1 when differences are found. This checks field metadata only, not records, indexes, relationships, or FoxPro business logic.
 
 Validate records:
 
