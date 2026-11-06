@@ -25,3 +25,17 @@ def test_max_length_matches_case_insensitively():
 def test_blank_required_field_still_detected():
     issues = validate_records([{"name": "  "}], required_fields=["NAME"])
     assert len(issues) == 1
+
+
+def test_reject_ambiguous_case_insensitive_fields():
+    import pytest
+
+    with pytest.raises(ValueError, match="Row 1 contains duplicate field name"):
+        validate_records([{"Name": "Asha", "NAME": ""}], required_fields=["NAME"])
+
+
+def test_reject_ambiguous_fields_in_later_row():
+    import pytest
+
+    with pytest.raises(ValueError, match="Row 2 contains duplicate field name"):
+        validate_records([{"Name": "Asha"}, {"Name": "B", "NAME": "C"}])
