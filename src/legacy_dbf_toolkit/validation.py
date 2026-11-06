@@ -13,8 +13,13 @@ def validate_records(records: list[dict[str, Any]], required_fields=None, max_le
     max_lengths = max_lengths or {}
     issues = []
     for row_number, record in enumerate(records, start=1):
-        # FoxPro field names are case-insensitive.
-        values_by_field = {name.upper(): value for name, value in record.items()}
+        # FoxPro field names are case-insensitive; reject ambiguous transformed rows.
+        values_by_field = {}
+        for name, value in record.items():
+            normalized = name.upper()
+            if normalized in values_by_field:
+                raise ValueError(f"Row {row_number} contains duplicate field name (ignoring case): {name}")
+            values_by_field[normalized] = value
         for field in required_fields:
             value = values_by_field.get(field.upper())
             if value is None or (isinstance(value, str) and not value.strip()):
