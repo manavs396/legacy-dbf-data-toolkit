@@ -59,7 +59,7 @@ Validate records:
 python -m legacy_dbf_toolkit.cli validate path/to/customers.dbf --config config/example_rules.json
 ```
 
-Validation field names are matched case-insensitively (as in FoxPro/DBF), so a `NAME` rule also matches a `Name` column. Issue reports retain the configured field spelling.
+Validation field names are matched case-insensitively (as in FoxPro/DBF), so a `NAME` rule also matches a `Name` column. Issue reports retain the configured field spelling. If a transformed record contains ambiguous keys such as `Name` and `NAME` together, validation raises a `ValueError` instead of silently selecting one value; ordinary DBF schemas should not contain such duplicates.
 
 Export to CSV:
 
