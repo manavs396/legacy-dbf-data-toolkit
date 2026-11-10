@@ -17,6 +17,21 @@ def _safe_identifier(name: str) -> str:
     return cleaned
 
 
+def _checked_columns(columns: list[str]) -> list[str]:
+    """Reject DBF fields that collapse to the same SQLite column name."""
+    seen: dict[str, str] = {}
+    for column in columns:
+        normalized = _safe_identifier(column)
+        key = normalized.casefold()
+        if key in seen:
+            raise ValueError(
+                f"DBF columns {seen[key]!r} and {column!r} map to the same "
+                f"SQLite identifier {normalized!r}"
+            )
+        seen[key] = column
+    return columns
+
+
 def _sqlite_type(value: Any) -> str:
     if isinstance(value, bool):
         return "INTEGER"
@@ -37,7 +52,7 @@ def migrate_dbf_to_sqlite(
         return 0
 
     table = _safe_identifier(table_name or Path(dbf_path).stem)
-    columns = list(records[0].keys())
+    columns = _checked_columns(list(records[0].keys()))
 
     column_defs = []
     for column in columns:
