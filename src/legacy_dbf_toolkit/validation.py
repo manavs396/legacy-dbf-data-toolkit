@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections import Counter
 from dataclasses import dataclass
 from typing import Any
 
@@ -7,6 +8,15 @@ class ValidationIssue:
     row_number: int
     field: str
     message: str
+
+def summarize_issues(record_count: int, issues: list[ValidationIssue]) -> dict[str, Any]:
+    """Return a deterministic, JSON-serializable validation summary."""
+    by_field = Counter(issue.field for issue in issues)
+    return {
+        "record_count": record_count,
+        "issue_count": len(issues),
+        "issues_by_field": dict(sorted(by_field.items())),
+    }
 
 def validate_records(records: list[dict[str, Any]], required_fields=None, max_lengths=None):
     required_fields = required_fields or []
