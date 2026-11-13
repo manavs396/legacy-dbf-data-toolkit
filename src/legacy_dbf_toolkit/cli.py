@@ -1,4 +1,4 @@
-import argparse, json, logging
+import argparse, json, logging, sys
 from pathlib import Path
 
 from .config import load_rules
@@ -7,7 +7,7 @@ from .logging_utils import configure_logging
 from .reader import inspect_schema, read_dbf
 from .schema_diff import compare_schemas
 from .sqlite_migrator import migrate_dbf_to_sqlite
-from .validation import validate_records
+from .validation import summarize_issues, validate_records
 
 LOG = logging.getLogger(__name__)
 
@@ -28,6 +28,7 @@ def build_parser():
     validate_cmd = sub.add_parser("validate")
     validate_cmd.add_argument("dbf")
     validate_cmd.add_argument("--config", required=True)
+    validate_cmd.add_argument("--summary", action="store_true", help="Print JSON issue counts to stderr")
 
     export_cmd = sub.add_parser("export")
     export_cmd.add_argument("dbf")
@@ -70,6 +71,8 @@ def main():
         records = read_dbf(args.dbf)
         issues = validate_records(records, rules.get("required_fields"), rules.get("max_lengths"))
         print(json.dumps([i.__dict__ for i in issues], indent=2))
+        if args.summary:
+            print(json.dumps(summarize_issues(len(records), issues), indent=2), file=sys.stderr)
         LOG.info("Validated %s records; found %s issues", len(records), len(issues))
         return 1 if issues else 0
 
