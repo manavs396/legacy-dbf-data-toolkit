@@ -80,6 +80,8 @@ Migrate a DBF table to SQLite:
 python -m legacy_dbf_toolkit.cli migrate-sqlite path/to/customers.dbf --database output/legacy.db --table customers
 ```
 
+SQLite migration stores DBF logical values (`True`/`False`) as SQLite integers (`1`/`0`), and preserves missing logical values as `NULL`. Other non-null values retain the toolkit's existing conversion behavior.
+
 SQLite migration normalizes DBF column names to SQL-safe identifiers. If two source columns normalize to the same name (including case-insensitive collisions, such as `Customer Name` and `Customer-Name`), migration stops with a clear error before writing the database; rename the conflicting source columns in a controlled preprocessing step before retrying.
 
 ## Modernization direction
