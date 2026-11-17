@@ -42,6 +42,13 @@ def _sqlite_type(value: Any) -> str:
     return "TEXT"
 
 
+def _sqlite_value(value: Any) -> Any:
+    """Store DBF logical values as SQLite integers; retain other conversions."""
+    if isinstance(value, bool):
+        return int(value)
+    return str(value) if value is not None else None
+
+
 def migrate_dbf_to_sqlite(
     dbf_path: str | Path,
     sqlite_path: str | Path,
@@ -73,7 +80,7 @@ def migrate_dbf_to_sqlite(
 
         connection.executemany(
             insert_sql,
-            [[str(row.get(column)) if row.get(column) is not None else None for column in columns]
+            [[_sqlite_value(row.get(column)) for column in columns]
              for row in records],
         )
         connection.commit()
