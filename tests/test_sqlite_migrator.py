@@ -27,3 +27,23 @@ def test_unique_sqlite_column_names_are_preserved():
 def test_normalized_sqlite_column_collisions_are_rejected(columns):
     with pytest.raises(ValueError, match="map to the same SQLite identifier"):
         _checked_columns(columns)
+
+
+def test_logical_fields_migrate_as_sqlite_integers(monkeypatch, tmp_path):
+    from legacy_dbf_toolkit import sqlite_migrator
+
+    monkeypatch.setattr(sqlite_migrator, "read_dbf", lambda _: [
+        {"ACTIVE": True, "NAME": "Asha"},
+        {"ACTIVE": False, "NAME": "Sam"},
+        {"ACTIVE": None, "NAME": "Unknown"},
+    ])
+    database = tmp_path / "synthetic.sqlite"
+    assert sqlite_migrator.migrate_dbf_to_sqlite("synthetic.dbf", database, "customers") == 3
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT ACTIVE, typeof(ACTIVE), NAME FROM customers ORDER BY rowid"
+        ).fetchall() == [
+            (1, "integer", "Asha"),
+            (0, "integer", "Sam"),
+            (None, "null", "Unknown"),
+        ]
