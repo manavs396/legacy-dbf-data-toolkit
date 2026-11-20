@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+import pytest
+
 from legacy_dbf_toolkit.schema_diff import compare_schemas
 
 
@@ -38,3 +40,16 @@ def test_reports_decimal_precision_changes():
 
 def test_empty_schemas_have_no_differences():
     assert compare_schemas([], []) == {"added": [], "removed": [], "changed": []}
+
+
+@pytest.mark.parametrize("side", ["before", "after"])
+def test_rejects_duplicate_case_insensitive_names(side):
+    duplicate = [Field("Name", "C", 20), Field("NAME", "C", 40)]
+    before, after = (duplicate, []) if side == "before" else ([], duplicate)
+    with pytest.raises(ValueError, match=f"Duplicate field names in {side} schema.*'Name'.*'NAME'"):
+        compare_schemas(before, after)
+
+
+def test_rejects_identical_duplicate_names():
+    with pytest.raises(ValueError, match="Duplicate field names in before schema"):
+        compare_schemas([Field("ID", "N", 8), Field("ID", "N", 8)], [])
