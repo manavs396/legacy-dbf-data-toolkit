@@ -51,7 +51,7 @@ python -m legacy_dbf_toolkit.cli schema-diff path/to/old.dbf path/to/new.dbf \
   --fail-on-change
 ```
 
-The JSON report contains `added`, `removed`, and `changed` fields, including before/after metadata for changes in type, length, or decimal precision. Field names are compared case-insensitively; column order and case-only name differences are ignored. By default, the report is printed to stdout. When `--output` is supplied, the same JSON is also written to the requested file, making it easy to retain schema comparisons as CI artifacts or migration-review evidence. `--fail-on-change` continues to return exit code 1 when differences are found. This checks field metadata only, not records, indexes, relationships, or FoxPro business logic.
+The JSON report contains `added`, `removed`, and `changed` fields, including before/after metadata for changes in type, length, or decimal precision. Field names are compared case-insensitively; column order and case-only name differences are ignored. By default, the report is printed to stdout. When `--output` is supplied, the same JSON is also written to the requested file, making it easy to retain schema comparisons as CI artifacts or migration-review evidence. `--fail-on-change` continues to return exit code 1 when differences are found. This checks field metadata only, not records, indexes, relationships, or FoxPro business logic. If either schema contains duplicate field names after case-insensitive normalization (for example, `Name` and `NAME`), schema comparison raises a `ValueError` rather than silently discarding one definition. Resolve the ambiguous schema before comparing.
 
 Validate records:
 
