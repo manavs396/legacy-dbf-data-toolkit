@@ -25,9 +25,17 @@ The SQLite migration helper is intentionally lightweight. It demonstrates how le
 
 ## Quick start
 
+From the repository root, use Python 3.10 or newer. Install the toolkit in editable mode so the CLI can import the package from the `src` layout.
+
 ```bash
 python -m venv .venv
-pip install -r requirements.txt
+# macOS/Linux:
+source .venv/bin/activate
+# Windows PowerShell (instead of source): .venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m pip install -e .
+python -m legacy_dbf_toolkit.cli --help
+python -m pytest
 ```
 
 Inspect a DBF schema:
@@ -62,7 +70,7 @@ python -m legacy_dbf_toolkit.cli validate path/to/customers.dbf --config config/
 For an optional machine-readable summary on stderr (while preserving the existing JSON issue list on stdout), add `--summary` to `validate`. It reports `record_count`, `issue_count`, and `issues_by_field`; the validation exit status remains 1 when issues exist. For example:
 
 ```bash
-python -m legacy_dbf_toolkit.cli validate path/to/customers.dbf \\
+python -m legacy_dbf_toolkit.cli validate path/to/customers.dbf \
   --config config/example_rules.json --summary
 ```
 
